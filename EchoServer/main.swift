@@ -1,10 +1,5 @@
-//
-//  main.swift
-//  EchoServer
-//
-//  Created by yokochie on 2015/12/13.
-//  Copyright © 2015年 yokochie. All rights reserved.
-//
+
+
 
 import Darwin
 
