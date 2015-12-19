@@ -9,19 +9,20 @@ let DEFAULT_BACKLOG = 128
 var loop: UnsafeMutablePointer<uv_loop_t> = nil
 var addr = sockaddr_in()
 
-func alloc_buffer(handle: UnsafeMutablePointer<uv_handle_t>, suggested_size: size_t, buf: UnsafeMutablePointer<uv_buf_t>) {
+let alloc_buffer: @convention(c) (UnsafeMutablePointer<uv_handle_t>, size_t, UnsafeMutablePointer<uv_buf_t>) -> Void = { (handle, suggested_size, buf) in
     buf.memory.base = UnsafeMutablePointer<CChar>.alloc(suggested_size)
     buf.memory.len = suggested_size
 }
 
-func echo_write(req: UnsafeMutablePointer<uv_write_t>, status: CInt) {
+let echo_write: @convention(c) (UnsafeMutablePointer<uv_write_t>, CInt) -> Void = { (req, status) in
     if status != 0 {
         print("Write error \(uv_strerror(status))")
     }
     req.destroy()
 }
 
-func echo_read(client: UnsafeMutablePointer<uv_stream_t>, nread: ssize_t, buf: UnsafePointer<uv_buf_t>) {
+
+let echo_read: @convention(c) (UnsafeMutablePointer<uv_stream_t>, ssize_t, UnsafePointer<uv_buf_t>) -> Void = { (client, nread, buf) in
     if nread < 0 {
         if nread != ssize_t(UV_EOF.rawValue) {
             print("Read error \(uv_err_name(CInt(nread)))")
@@ -39,7 +40,7 @@ func echo_read(client: UnsafeMutablePointer<uv_stream_t>, nread: ssize_t, buf: U
     }
 }
 
-func on_new_connect(server: UnsafeMutablePointer<uv_stream_t>, status: CInt) {
+let on_new_connect: @convention(c) (UnsafeMutablePointer<uv_stream_t>, CInt) -> Void = { (server, status) in
     if status < 0 {
         print("New connection error \(uv_strerror(status))")
         // error!
@@ -54,8 +55,8 @@ func on_new_connect(server: UnsafeMutablePointer<uv_stream_t>, status: CInt) {
     } else {
         uv_close(UnsafeMutablePointer<uv_handle_t>(client), nil)
     }
-}
 
+}
 
 func main() -> CInt {
     loop = uv_default_loop()
